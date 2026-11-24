@@ -1,0 +1,43 @@
+# Site block for YOUR host-installed Caddy. Either paste it into /etc/caddy/Caddyfile, or save it as
+# /etc/caddy/sites/wordsearch.caddy and add `import sites/*` to the main Caddyfile. Then:
+#
+#   caddy validate --config /etc/caddy/Caddyfile --adapter caddyfile
+#   sudo systemctl reload caddy
+#
+# Replace the domain, and keep the port equal to WEB_PORT in the stack's .env (default 8010).
+# The domain must also be SITE_ADDRESS in .env, or Django rejects the Host header.
+# A real domain pointing at this server gets a Let's Encrypt certificate automatically (ports 80 and 443 open).
+
+search.example.com {
+	encode zstd gzip
+
+	header {
+		X-Content-Type-Options nosniff
+		X-Frame-Options DENY
+		Referrer-Policy same-origin
+		Strict-Transport-Security "max-age=31536000"
+		-Server
+	}
+
+	# This site is read-only: searching is GET, nothing else is needed.
+	@not_read not method GET HEAD
+	respond @not_read 405
+
+	request_body {
+		max_size 10KB
+	}
+
+	reverse_proxy 127.0.0.1:8010 {
+		health_uri /healthz
+		health_interval 10s
+		health_timeout 3s
+		transport http {
+			dial_timeout 3s
+			response_header_timeout 20s
+		}
+	}
+
+	log {
+		format json
+	}
+}

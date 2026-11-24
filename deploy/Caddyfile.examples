@@ -1,0 +1,48 @@
+# Variants of deploy/Caddyfile for your host Caddy. Copy the parts you need; nothing here is loaded by default.
+# The app listens on 127.0.0.1:8010 (WEB_PORT in .env).
+
+# 1) Redirect the bare domain to www (or the reverse)
+example.com {
+	redir https://www.example.com{uri} permanent
+}
+
+# 2) Put a password in front (staging, or while data licences are being checked).
+#    Make the hash with:  caddy hash-password
+www.example.com {
+	basic_auth {
+		friend $2a$14$REPLACE_WITH_THE_HASH
+	}
+	reverse_proxy 127.0.0.1:8010
+}
+
+# 3) Several names, one app (every name must also be listed in DJANGO_ALLOWED_HOSTS)
+search.example.com, sol.example.org {
+	reverse_proxy 127.0.0.1:8010
+}
+
+# 4) Behind a CDN / load balancer that already terminates TLS: speak plain HTTP and trust its forwarded IP.
+#    Drop Strict-Transport-Security from the main block and let the CDN send it.
+:80 {
+	reverse_proxy 127.0.0.1:8010
+}
+# ...and in the global block at the top of /etc/caddy/Caddyfile:
+#   servers {
+#       trusted_proxies static private_ranges
+#   }
+
+# 5) Rate limiting needs a plugin build (github.com/mholt/caddy-ratelimit):
+#      xcaddy build --with github.com/mholt/caddy-ratelimit
+#    then, inside the site block:
+#      rate_limit {
+#          zone per_ip {
+#              key    {remote_host}
+#              events 60
+#              window 1m
+#          }
+#      }
+#    Without the plugin, rate-limit at the CDN or firewall instead.
+
+# 6) Maintenance page while you re-load data
+www.example.com {
+	respond "Back shortly: updating the word list." 503
+}

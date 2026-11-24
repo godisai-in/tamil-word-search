@@ -1,0 +1,7 @@
+# Runtime dependencies of the web image (and the one-shot loader, which uses the same image).
+# Ranges, not pins: for a locked build, run `pip-compile` / `uv pip compile` against this file.
+django>=5.2,<5.3
+gunicorn>=23,<24
+whitenoise>=6.9,<7
+numpy>=2.2,<3
+opensearch-py>=3,<4

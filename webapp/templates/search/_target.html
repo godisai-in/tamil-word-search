@@ -1,0 +1,25 @@
+{% load lex %}<li class="sug">
+  <div class="sug-main">
+    <a class="ta" lang="{{ t.lang }}" href="{% url 'search:results' %}?q={{ t.text|urlencode }}">{{ t.text }}</a>
+    {% for c in t.contexts %}<span class="chip chip-domain">{{ c|truncatechars:40 }}</span>{% endfor %}
+    <span class="chip chip-common">{{ t.n_sources }} source{{ t.n_sources|pluralize }}</span>
+  </div>
+  {% if t.pivots %}<p class="note">Inferred: shares the translations <b>{{ t.pivots|join:", " }}</b> with “{{ word.text }}”.</p>{% endif %}
+  <details class="sources">
+    <summary>Sources ({{ t.evidence|length }})</summary>
+    <ul>
+      {% for e in t.evidence|slice:":8" %}
+      <li>
+        <span class="sense">{% if e.headword %}<i>under “{{ e.headword }}”:</i> {% endif %}{{ e.gloss|truncatechars:160 }}</span>
+        <span class="src">
+          {% with url=e.url|safe_url %}{% if url %}<a href="{{ url }}" target="_blank" rel="noopener noreferrer nofollow">{{ e.source }}<span class="sr-only"> (opens in a new tab)</span></a>{% else %}{{ e.source }}{% endif %}{% endwith %}
+          {% if e.license %} · {{ e.license }}{% endif %}{% if e.ref %} · {{ e.ref }}{% endif %}
+          {% if e.context %} · {{ e.context|truncatechars:50 }}{% endif %}
+          <span class="chip chip-method">{{ e.method }}</span>
+        </span>
+      </li>
+      {% endfor %}
+    </ul>
+    {% if t.evidence|length > 8 %}<p class="more">+ {{ t.evidence|length|add:"-8" }} more</p>{% endif %}
+  </details>
+</li>

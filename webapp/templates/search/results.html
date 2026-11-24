@@ -1,0 +1,92 @@
+{% extends "base.html" %}{% load lex %}
+{% block title %}{{ q }} · சொல் தேடல்{% endblock %}
+{% block content %}
+<p class="perf-strip" aria-label="Timing">
+  <span>⏱ <b>{{ perf.lookup }}</b> ms</span>
+  {% for name, ms in perf.stages.items %}<span>{{ name }} <b>{{ ms }}</b></span>{% endfor %}
+  <a href="{% url 'search:perf' %}">performance →</a>
+</p>
+
+{% if word %}
+<article class="card">
+  <h1 class="term" lang="{{ word.lang }}">{{ word.text }}</h1>
+  <div class="meta-row">
+    <span class="chip chip-lang">{% if word.lang == 'ta' %}தமிழ் · Tamil{% else %}English{% endif %}</span>
+    <span class="chip chip-common">{{ entries|length }} entr{{ entries|length|pluralize:"y,ies" }}</span>
+    <span class="chip chip-common">{{ counts.edges }} relation{{ counts.edges|pluralize }}</span>
+    {% if word.token_count > 1 %}<span class="chip chip-register">phrase</span>{% endif %}
+  </div>
+  {% if how == 'form' %}<p class="note">“{{ q }}” is a form of <b lang="{{ word.lang }}">{{ word.text }}</b>{% if form.tags %} <span class="roman">({{ form.tags }})</span>{% endif %}.</p>{% endif %}
+</article>
+
+{% if breakdown %}
+<article class="card related">
+  <h2 class="h2"><span lang="ta">மூலங்கள்</span> <small>source breakdown · where these results come from</small></h2>
+  <ul class="sugs">{% for b in breakdown %}
+    <li class="sug">
+      <div class="sug-main">
+        {% with url=b.url|safe_url %}{% if url %}<a href="{{ url }}" target="_blank" rel="noopener noreferrer nofollow"><b>{{ b.source }}</b><span class="sr-only"> (opens in a new tab)</span></a>{% else %}<b>{{ b.source }}</b>{% endif %}{% endwith %}
+        {% if b.license %}<span class="chip chip-common">{{ b.license }}</span>{% endif %}
+        {% if b.entries %}<span class="chip chip-domain">{{ b.entries }} definition{{ b.entries|pluralize }}</span>{% endif %}
+        {% if b.relations %}<span class="chip chip-domain">{{ b.relations }} link{{ b.relations|pluralize }}</span>{% endif %}
+      </div>
+      <progress max="{{ breakdown.0.total }}" value="{{ b.total }}" aria-label="share of this word's evidence"></progress>
+      {% if b.by_rel %}<p class="src-line">{% for rel, n in b.by_rel %}{{ rel }} {{ n }}{% if not forloop.last %} · {% endif %}{% endfor %}</p>{% endif %}
+    </li>{% endfor %}
+  </ul>
+</article>
+{% endif %}
+
+{% if translations %}
+<h2 class="count">{% if word.lang == 'en' %}<span lang="ta">தமிழில்</span> <small>Tamil for “{{ word.text }}”{% else %}<span lang="ta">ஆங்கிலத்தில்</span> <small>English for “{{ word.text }}”{% endif %}</small></h2>
+<article class="card"><ul class="sugs">{% for t in translations|slice:":15" %}{% include "search/_target.html" %}{% endfor %}</ul>
+{% if translations|length > 15 %}<p class="more">+ {{ translations|length|add:"-15" }} more translations</p>{% endif %}</article>
+{% endif %}
+
+{% for g in relations %}
+<h2 class="count"><span lang="ta">{{ g.ta }}</span> <small>{{ g.en }}</small></h2>
+<article class="card related"><ul class="sugs">{% for t in g.items|slice:":10" %}{% include "search/_target.html" %}{% endfor %}</ul>
+{% if g.items|length > 10 %}<p class="more">+ {{ g.items|length|add:"-10" }} more</p>{% endif %}</article>
+{% endfor %}
+
+{% if inferred %}
+<h2 class="count"><span lang="ta">ஊகிக்கப்பட்டவை</span> <small>possibly related · inferred, not stated by any source</small></h2>
+<article class="card related"><ul class="sugs">{% for t in inferred %}{% include "search/_target.html" %}{% endfor %}</ul></article>
+{% endif %}
+
+{% if entries %}
+<h2 class="count"><span lang="ta">பொருள்கள்</span> <small>definitions, by source</small></h2>
+<article class="card"><ul class="meanings">
+  {% for e in entries|slice:":6" %}{% include "search/_entry.html" %}{% endfor %}
+</ul>
+{% if entries|length > 6 %}<details class="sources"><summary>{{ entries|length|add:"-6" }} more definitions</summary><ul class="meanings">
+  {% for e in entries|slice:"6:" %}{% include "search/_entry.html" %}{% endfor %}
+</ul></details>{% endif %}</article>
+{% endif %}
+
+{% if similar %}
+<h2 class="count"><span lang="ta">பொருள் ஒத்தவை</span> <small>similar by meaning · vector search</small></h2>
+<article class="card related">
+  <ul class="sim-list">{% for s in similar %}<li{% if s.also_related %} class="also"{% endif %} title="cosine {{ s.score|floatformat:3 }}{% if s.also_related %} · also related by a source above{% endif %}"><a lang="{{ word.lang }}" href="{% url 'search:results' %}?q={{ s.text|urlencode }}">{{ s.text }}</a></li>{% endfor %}</ul>
+  <p class="caveat">Nearest words by IndicBERT embedding, same language only, closest first. Treat this as a rough topical signal, not synonyms: the first few are often good (“bank” → “banking”) and the rest drift to the same general area. Scores are too bunched together to be meaningful, so only the order is shown (hover for the cosine). Highlighted words are also related by a source above.</p>
+</article>
+{% endif %}
+
+{% if phrases %}
+<h2 class="count"><span lang="ta">சொற்றொடர்கள்</span> <small>also appears in</small></h2>
+<article class="card related"><ul class="cand-list">{% for p in phrases %}<li><a lang="{{ p.lang }}" href="{% url 'search:results' %}?q={{ p.text|urlencode }}">{{ p.text }}</a></li>{% endfor %}</ul></article>
+{% endif %}
+
+{% if not translations and not relations and not inferred and not entries %}
+<div class="card empty"><p>“{{ word.text }}” is in the word list but no source says anything about it yet.</p></div>
+{% endif %}
+
+{% else %}
+<div class="card empty">
+  <h1 class="h2">No exact match for “{{ q }}”</h1>
+  {% if candidates %}<p>{% if how == 'contains' %}Words containing it:{% else %}Did you mean:{% endif %}</p>
+  <ul class="cand-list">{% for c in candidates %}<li><a lang="{{ c.lang }}" href="{% url 'search:results' %}?q={{ c.text|urlencode }}">{{ c.text }}</a></li>{% endfor %}</ul>
+  {% else %}<p>Nothing close in the {% if lang == 'ta' %}Tamil{% else %}English{% endif %} word list. Check the spelling.</p>{% endif %}
+</div>
+{% endif %}
+{% endblock %}

@@ -1,0 +1,38 @@
+{
+  "settings": {
+    "index": {
+      "knn": true,
+      "knn.algo_param.ef_search": 100,
+      "number_of_shards": 1,
+      "number_of_replicas": 0
+    }
+  },
+  "mappings": {
+    "dynamic": "strict",
+    "_meta": {
+      "schema_version": 1,
+      "model": "ai4bharat/IndicBERTv2-MLM-Sam-TLM",
+      "vector_prep": "mean-pool (special tokens excluded) -> optional per-language centering (see pkl vector_prep.centering) -> L2 normalise",
+      "doc_id": "sha1(lang + 0x1f + norm)[:20]"
+    },
+    "properties": {
+      "lang":         { "type": "keyword" },
+      "text":         { "type": "search_as_you_type" },
+      "norm":         { "type": "keyword" },
+      "token_count":  { "type": "integer" },
+      "headword":     { "type": "boolean" },
+      "collections":  { "type": "keyword" },
+      "dictionaries": { "type": "keyword" },
+      "embedding": {
+        "type": "knn_vector",
+        "dimension": 768,
+        "method": {
+          "name": "hnsw",
+          "engine": "lucene",
+          "space_type": "cosinesimil",
+          "parameters": { "m": 16, "ef_construction": 128 }
+        }
+      }
+    }
+  }
+}

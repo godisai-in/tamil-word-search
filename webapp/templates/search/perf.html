@@ -1,0 +1,38 @@
+{% extends "base.html" %}{% load lex humanize %}
+{% block title %}Performance · சொல் தேடல்{% endblock %}
+{% block content %}
+<h1 class="h2">Performance</h1>
+<p class="lede">Timings of the searches made since this server started (in-memory, last 1000). For a controlled run use <code>python manage.py benchmark</code>.</p>
+
+<section class="card">
+  <h2 class="h2">Engine</h2>
+  <div class="stats-grid">
+    <div><b>{{ stats.words|intcomma }}</b><span>words</span></div>
+    <div><b>{{ stats.entries|intcomma }}</b><span>source entries</span></div>
+    <div><b>{{ stats.relations|intcomma }}</b><span>relations</span></div>
+    <div><b>{{ stats.db_mb }} MB</b><span>SQLite file</span></div>
+    <div><b>{{ rss_mb }} MB</b><span>process memory</span></div>
+  </div>
+  <p class="note">Vector backend: <b>{{ vectors.backend }}</b>.
+  {% if vectors.backend == 'opensearch' %}
+    {% if vectors.opensearch.error %}OpenSearch is <b>not reachable</b>: similar-by-meaning is switched off until it is back.{% else %}Index <b>{{ vectors.opensearch.index }}</b>: {{ vectors.opensearch.docs|intcomma }} documents.{% endif %}
+  {% elif vectors.available %}
+    In RAM now: {% for l in vectors.loaded %}<b>{{ l }}</b>{% if not forloop.last %}, {% endif %}{% empty %}none yet (loaded on first use){% endfor %}{% if vectors.load_seconds %}. Load time: {% for l, s in vectors.load_seconds.items %}{{ l }} {{ s }} s{% if not forloop.last %}, {% endif %}{% endfor %}.{% endif %}
+  {% else %}not built (run <code>pipeline/export_vectors.py</code>); similar-by-meaning is off.{% endif %}
+  {% if vectors.last_error %}<br>Last vector error: <code>{{ vectors.last_error }}</code>{% endif %}</p>
+</section>
+
+<section class="card">
+  <h2 class="h2">Search latency by stage <small>milliseconds</small></h2>
+  {% if summary %}
+  <div class="table-wrap"><table class="tbl perf-table">
+    <thead><tr><th>Stage</th><th class="num">Searches</th><th class="num">p50</th><th class="num">p95</th><th class="num">max</th><th class="bar-cell">p95</th></tr></thead>
+    <tbody>{% for r in summary %}<tr>
+      <td>{% if r.stage == 'total' %}<b>{{ r.stage }}</b>{% else %}{{ r.stage }}{% endif %}</td>
+      <td class="num">{{ r.n }}</td><td class="num">{{ r.p50|floatformat:1 }}</td><td class="num">{{ r.p95|floatformat:1 }}</td><td class="num">{{ r.max|floatformat:1 }}</td>
+      <td class="bar-cell"><progress max="100" value="{{ r.p95|meter_width:summary.0.p95 }}" aria-label="p95 relative to total"></progress></td>
+    </tr>{% endfor %}</tbody>
+  </table></div>
+  {% else %}<p>No searches yet. <a href="{% url 'search:home' %}">Try one</a>.</p>{% endif %}
+</section>
+{% endblock %}

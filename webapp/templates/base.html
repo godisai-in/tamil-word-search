@@ -1,0 +1,33 @@
+{% load static %}<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<meta name="description" content="Search English and Tamil words; see related words with the dictionary each one comes from.">
+<title>{% block title %}சொல் தேடல் · Word Search{% endblock %}</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Anek+Latin:wdth,wght@75..100,400..800&family=Anek+Tamil:wdth,wght@75..100,400..800&family=Tiro+Tamil&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="{% static 'css/site.css' %}">
+</head>
+<body>
+<a class="skip-link" href="#main">Skip to content</a>
+<header class="bar">
+  <a class="brand" href="{% url 'search:home' %}" aria-label="சொல் தேடல் Word Search — home"><span class="aytham" aria-hidden="true">ஃ</span><span lang="ta">சொல் தேடல்</span></a>
+  {% if request.resolver_match.url_name != 'home' %}
+  <form class="mini-search" action="{% url 'search:results' %}" role="search">
+    <label class="sr-only" for="mini-q">Search a word</label>
+    <input id="mini-q" type="search" name="q" value="{{ q|default:'' }}" placeholder="Search a word · சொல்லைத் தேடுக" autocomplete="off" list="sugs" maxlength="100">
+    <datalist id="sugs"></datalist>
+    <button class="btn btn-gold"><span lang="ta">தேடுக</span><span class="sr-only"> (search)</span></button>
+  </form>
+  {% endif %}
+  <nav aria-label="Main"><a href="{% url 'search:sources' %}">Sources</a><a href="{% url 'search:perf' %}"><span aria-hidden="true">⏱ </span>Performance</a></nav>
+</header>
+<main id="main" tabindex="-1">{% block content %}{% endblock %}</main>
+<footer class="foot">
+  <p>Data: mydictionary.in dictionaries (CC BY-SA / CC0), English Wiktionary (CC BY-SA 4.0), Princeton WordNet 3.0, Tamil Virtual Academy glossaries. Each result links back to its source.</p>
+</footer>
+<script src="{% static 'js/site.js' %}" defer></script>
+</body>
+</html>

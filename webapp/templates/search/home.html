@@ -1,0 +1,16 @@
+{% extends "base.html" %}{% load humanize %}
+{% block content %}
+<section class="hero">
+  <p class="kicker" lang="ta">தமிழ் · English சொல் தேடல்</p>
+  <h1 lang="ta">சொல்லைத் தேடுங்க.<br><em>தொடர்புடையவை பாருங்க.</em></h1>
+  <p class="lede">Search a word in English or Tamil. See its translations, synonyms and related words, each with the dictionary it comes from.</p>
+  <form class="big-search" action="{% url 'search:results' %}" role="search">
+    <label class="sr-only" for="q">Search an English or Tamil word</label>
+    <input id="q" type="search" name="q" placeholder="bank, வங்கி, water…" autofocus autocomplete="off" list="sugs" maxlength="100">
+    <datalist id="sugs"></datalist>
+    <button class="btn btn-gold"><span lang="ta">தேடுக</span><span class="sr-only"> (search)</span></button>
+  </form>
+  <ul class="tries" aria-label="Try these">{% for w in examples %}<li><a href="{% url 'search:results' %}?q={{ w|urlencode }}">{{ w }}</a></li>{% endfor %}</ul>
+  <p class="stats"><b>{{ stats.words_en|intcomma }}</b> English · <b>{{ stats.words_ta|intcomma }}</b> Tamil words · <b>{{ stats.relations|intcomma }}</b> relations · <b>{{ stats.sources }}</b> sources</p>
+</section>
+{% endblock %}

@@ -1,0 +1,27 @@
+{% extends "base.html" %}{% load lex humanize %}
+{% block title %}Sources · சொல் தேடல்{% endblock %}
+{% block content %}
+<h1 class="h2"><span lang="ta">மூலங்கள்</span> Sources</h1>
+<p class="lede">Every dictionary and corpus behind the results, with how much each one contributes. “Definitions” are source records; “links” are word-to-word relations those records assert.</p>
+
+<section class="card">
+  <h2 class="h2">By collection</h2>
+  <div class="stats-grid">{% for g in groups %}
+    <div><b>{{ g.entries|intcomma }}</b><span>{{ g.collection }} · {{ g.sources }} source{{ g.sources|pluralize }} · {{ g.relations|intcomma }} links</span></div>{% endfor %}
+  </div>
+</section>
+
+<section class="card">
+  <h2 class="h2">All {{ sources|length }} sources</h2>
+  <div class="table-wrap"><table class="tbl perf-table">
+    <thead><tr><th>Source</th><th>Licence</th><th class="num">Definitions</th><th class="num">Links</th><th class="bar-cell">Share</th></tr></thead>
+    <tbody>{% for s in sources %}<tr>
+      <td>{% with url=s.url|safe_url %}{% if url %}<a href="{{ url }}" target="_blank" rel="noopener noreferrer nofollow">{{ s.name }}<span class="sr-only"> (opens in a new tab)</span></a>{% else %}{{ s.name }}{% endif %}{% endwith %}
+        <br><span class="src-line">{{ s.collection }} · {{ s.kind }}{% if s.year %} · {{ s.year }}{% endif %}{% if s.trust < 1 %} · trust {{ s.trust }}{% endif %}</span></td>
+      <td>{{ s.license|default:"—" }}</td>
+      <td class="num">{{ s.entries|intcomma }}</td><td class="num">{{ s.relations|intcomma }}</td>
+      <td class="bar-cell"><progress max="{{ top }}" value="{{ s.entries|add:s.relations }}" aria-label="share of all data"></progress></td>
+    </tr>{% endfor %}</tbody>
+  </table></div>
+</section>
+{% endblock %}

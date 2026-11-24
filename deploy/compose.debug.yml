@@ -1,0 +1,7 @@
+# Debug only:  docker compose -f docker-compose.yml -f deploy/compose.debug.yml up -d
+# Exposes OpenSearch on 127.0.0.1:9200 (this machine only) so you can curl it. Never use on a public server.
+services:
+  opensearch:
+    networks: [backend, edge]         # an `internal` network cannot publish ports, so also join `edge`
+    ports:
+      - "127.0.0.1:9200:9200"

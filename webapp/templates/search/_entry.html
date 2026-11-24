@@ -1,0 +1,7 @@
+{% load lex %}<li class="meaning-row">
+  {% if e.pos %}<span class="pos">{{ e.pos }}</span>{% endif %}
+  {% if e.context %}<span class="chip chip-domain">{{ e.context|truncatechars:60 }}</span>{% endif %}
+  <p class="note" lang="{{ e.gloss_lang }}">{{ e.gloss|truncatechars:400 }}</p>
+  {% for x in e.examples %}<p class="example"><span lang="ta">{{ x.text }}</span>{% if x.translation %} — {{ x.translation }}{% endif %}</p>{% endfor %}
+  <p class="src">{% with url=e.source_url|safe_url|default:e.source_home|safe_url %}{% if url %}<a href="{{ url }}" target="_blank" rel="noopener noreferrer nofollow">{{ e.source }}<span class="sr-only"> (opens in a new tab)</span></a>{% else %}{{ e.source }}{% endif %}{% endwith %}{% if e.license %} · {{ e.license }}{% endif %}{% if e.source_ref %} · {{ e.source_ref }}{% endif %}</p>
+</li>
