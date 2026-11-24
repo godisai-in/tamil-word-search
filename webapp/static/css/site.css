@@ -161,3 +161,11 @@ h2.pair{font-size:inherit;font-weight:inherit}
 .perf-table td.num,.perf-table th.num{text-align:right;font-variant-numeric:tabular-nums}
 .bar-cell{width:40%}
 progress{width:100%;height:12px;accent-color:var(--kumkum)}
+
+/* results: main column + sources sidebar on the right */
+main:has(.layout){max-width:1180px}
+.layout{display:grid;grid-template-columns:minmax(0,1fr) 340px;gap:24px;align-items:start}
+.layout .primary{min-width:0}
+.layout .side{position:sticky;top:16px;margin-top:0;max-height:calc(100vh - 32px);overflow:auto}
+.layout .side .h2{font-size:1.15rem}
+@media (max-width:860px){.layout{grid-template-columns:1fr}.layout .side{position:static;max-height:none;order:2}}

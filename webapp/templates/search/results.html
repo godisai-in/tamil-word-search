@@ -19,23 +19,9 @@
   {% if how == 'form' %}<p class="note">“{{ q }}” is a form of <b lang="{{ word.lang }}">{{ word.text }}</b>{% if form.tags %} <span class="roman">({{ form.tags }})</span>{% endif %}.</p>{% endif %}
 </article>
 
-{% if breakdown %}
-<article class="card related">
-  <h2 class="h2"><span lang="ta">மூலங்கள்</span> <small>source breakdown · where these results come from</small></h2>
-  <ul class="sugs">{% for b in breakdown %}
-    <li class="sug">
-      <div class="sug-main">
-        {% with url=b.url|safe_url %}{% if url %}<a href="{{ url }}" target="_blank" rel="noopener noreferrer nofollow"><b>{{ b.source }}</b><span class="sr-only"> (opens in a new tab)</span></a>{% else %}<b>{{ b.source }}</b>{% endif %}{% endwith %}
-        {% if b.license %}<span class="chip chip-common">{{ b.license }}</span>{% endif %}
-        {% if b.entries %}<span class="chip chip-domain">{{ b.entries }} definition{{ b.entries|pluralize }}</span>{% endif %}
-        {% if b.relations %}<span class="chip chip-domain">{{ b.relations }} link{{ b.relations|pluralize }}</span>{% endif %}
-      </div>
-      <progress max="{{ breakdown.0.total }}" value="{{ b.total }}" aria-label="share of this word's evidence"></progress>
-      {% if b.by_rel %}<p class="src-line">{% for rel, n in b.by_rel %}{{ rel }} {{ n }}{% if not forloop.last %} · {% endif %}{% endfor %}</p>{% endif %}
-    </li>{% endfor %}
-  </ul>
-</article>
-{% endif %}
+<div class="layout">
+<div class="primary">
+
 
 {% if translations %}
 <h2 class="count">{% if word.lang == 'en' %}<span lang="ta">தமிழில்</span> <small>Tamil for “{{ word.text }}”{% else %}<span lang="ta">ஆங்கிலத்தில்</span> <small>English for “{{ word.text }}”{% endif %}</small></h2>
@@ -80,6 +66,26 @@
 {% if not translations and not relations and not inferred and not entries %}
 <div class="card empty"><p>“{{ word.text }}” is in the word list but no source says anything about it yet.</p></div>
 {% endif %}
+
+</div>
+{% if breakdown %}
+<aside class="card related side" aria-label="Sources">
+  <h2 class="h2"><span lang="ta">மூலங்கள்</span> <small>sources</small></h2>
+  <ul class="sugs">{% for b in breakdown %}
+    <li class="sug">
+      <div class="sug-main">
+        {% with url=b.url|safe_url %}{% if url %}<a href="{{ url }}" target="_blank" rel="noopener noreferrer nofollow"><b>{{ b.source }}</b><span class="sr-only"> (opens in a new tab)</span></a>{% else %}<b>{{ b.source }}</b>{% endif %}{% endwith %}
+        {% if b.license %}<span class="chip chip-common">{{ b.license }}</span>{% endif %}
+        {% if b.entries %}<span class="chip chip-domain">{{ b.entries }} definition{{ b.entries|pluralize }}</span>{% endif %}
+        {% if b.relations %}<span class="chip chip-domain">{{ b.relations }} link{{ b.relations|pluralize }}</span>{% endif %}
+      </div>
+      <progress max="{{ breakdown.0.total }}" value="{{ b.total }}" aria-label="share of this word's evidence"></progress>
+      {% if b.by_rel %}<p class="src-line">{% for rel, n in b.by_rel %}{{ rel }} {{ n }}{% if not forloop.last %} · {% endif %}{% endfor %}</p>{% endif %}
+    </li>{% endfor %}
+  </ul>
+</aside>
+{% endif %}
+</div>
 
 {% else %}
 <div class="card empty">
