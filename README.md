@@ -206,6 +206,6 @@ The data compilation is **CC BY-SA 4.0**; source licences are listed on the `/so
 
 ## Developers
 
+* **Wijay Global** ([wijayglobal/T3F](https://github.com/wijayglobal/T3F))
 * **GoDisAI** ([godisai-in](https://github.com/godisai-in))
 * **Syed Jafer K** ([@syedjaferk](https://github.com/syedjaferk))
-* **Wijay Global** ([wijayglobal](https://github.com/wijayglobal))
